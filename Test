@@ -1,0 +1,144 @@
+import java.util.Date;
+
+import client.User;
+
+import charts.LineChart;
+import marketParameters.Map;
+import nxTools.NxDate;
+import nxTools.Tenor;
+import nxTools.nxFunctions.NxHaganWest;
+import nxTools.nxFunctions.NxOneToOne;
+import nxTools.nxFunctions.NxSmartVector;
+
+import swap.Schedule;
+import financial.flows.CashFlow;
+import financial.flows.CcyCashFlow;
+import financial.flows.Flows;
+
+
+
+public class Test { 
+  public static void main(String args[]) throws Exception, Throwable {
+		Date deb = new Date();
+		
+		//testCF();
+		//testSchedule();
+		//testParam();
+		//testInterp();
+		//testHagan();
+		//testDB();
+		//testChart();
+		//testDate();
+		Map.testMap();
+		
+		Date fin = new Date();
+		System.out.println("********  Done in "+(fin.getTime()-deb.getTime())+" ms  ****************");
+		Thread.sleep(20000);
+		System.out.println("********  Deconnection");
+		
+		//nirvSession.mySession.close();
+		System.exit(0);
+		return;
+	}
+	
+	public static void testInterp() throws Exception{
+		  NxSmartVector testSmartVector = new NxSmartVector('f','l','f');
+		  testSmartVector.addPoint(1.0, 2.0);
+		  testSmartVector.addPoint(1.0, 1.0);
+		  testSmartVector.addPoint(2.0, 2.0);
+		  
+		  
+		  NxOneToOne oneToOneTest = testSmartVector;
+		  
+		  System.out.println(oneToOneTest.apply(0.0));
+		  System.out.println(oneToOneTest.apply(0.5));
+		  System.out.println(oneToOneTest.apply(1.0));
+		  System.out.println(oneToOneTest.apply(1.5));
+		  System.out.println(oneToOneTest.apply(2.0));
+		  System.out.println(oneToOneTest.apply(2.5));
+		  System.out.println(oneToOneTest.apply(3.0));
+	}
+	public static void testCF() throws Exception{
+		int i;
+		CcyCashFlow cf;
+		Flows pf1 = new Flows();
+		Flows pf2 = new Flows();
+		
+		for(i=1;i<12;i++){
+			cf = new CcyCashFlow("EUR", new NxDate(2013,2,i),50);
+			pf1.nxAddCF(cf);
+		}
+		
+		for(i=1;i<10;i++){
+			cf = new CcyCashFlow("EUR", new NxDate(2013,2,20-i),50);
+			pf2.nxAddCF(cf);
+		}
+		pf1.nxAdd(pf2);
+		//pf2.info();
+		
+		pf1.info();
+		
+		System.out.println(" Cash Flows");
+		CashFlow[] cfs;
+		cfs = pf1.getCCyCashFlows("EUR");
+		for(i=0;i<cfs.length;i++){
+			cfs[i].info();
+		}
+	}
+	public static void testSchedule() throws Exception{
+		NxDate start = new NxDate(2013,1,29);
+		NxDate end = start.Adddate(new Tenor("10Y"), true, "USD");
+		Schedule sch = new Schedule(start, end, "Q", "MM", "USD");
+		sch.info();
+		start = new NxDate(2013,1,29);
+		end = start.Adddate(new Tenor("2Y"), true, "EUR");
+		sch = new Schedule(start, end, "Q", "MM", "EUR", "Prec");
+		sch.info();
+		
+		
+	}
+	public static void testParam(){
+		nxTools.Param.createProp();
+		System.out.println(nxTools.Param.getDbAdress());
+		System.out.println(nxTools.Param.getDbUser());
+		System.out.println(nxTools.Param.getDbPsw());
+		System.out.println(nxTools.Param.getDbServer());
+		
+		
+	}
+	public static void testHagan() throws Exception{
+		//final Double[] termsArg, final  Double[] valuesArg, boolean inputsAreForwards
+		Double[] termsArg = {1.0,2.0,3.0,5.0,7.0,10.0};
+		Double[] valuesArg = {0.01,0.0115,0.0125,0.015,0.016,0.017};
+		boolean inputsAreForwards = false;
+		NxHaganWest hw = new NxHaganWest(termsArg, valuesArg,inputsAreForwards );
+		double x;
+		for (int i=0; i<100;i++){
+			x = (double)i / 10;
+			System.out.println("x: "+x+"  Hagan: "+hw.apply(x));
+		}
+
+	}	
+	public static void testDB() throws Exception{
+		/*String table, field;
+		String whereClauses[];
+		table = "user";
+		field = "ID_USER";
+		whereClauses = new String[]{"USER_NAME='PUBLIC'"};
+		System.out.println(database.DB.getQuery(table, field, whereClauses));
+		System.out.println(database.DB.getIntFromDB(table, field, whereClauses));*/
+		User user = new User("PUBLIC");
+		Map map = new Map(user.getId_User());
+		map.info();
+	}
+	public static void testChart() throws Exception{
+		 LineChart demo = new LineChart("Comparison", "Which operating system are you using?");
+         demo.pack();
+         demo.setVisible(true);
+         Thread.sleep(100000);
+	}	
+	public static void testDate() throws Exception{
+		NxDate d = new NxDate();
+		System.out.println(d.toMyString() + " en SQL "+d.toSQLString());
+	}	
+}
